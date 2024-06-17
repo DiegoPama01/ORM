@@ -5,7 +5,6 @@ class UserRepository extends Repository {
         parent::__construct($context, 'User');
     }
 
-    // Método para obtener usuarios por edad
     public function getUsersByAge($age) {
         $stmt = $this->context->connection->prepare("SELECT * FROM users WHERE age = :age");
         $stmt->bindParam(':age', $age, PDO::PARAM_INT);
@@ -13,7 +12,6 @@ class UserRepository extends Repository {
         return $stmt->fetchAll(PDO::FETCH_CLASS, 'User');
     }
 
-    // Método para obtener usuarios con nombre similar
     public function getUsersByNameLike($name) {
         $name = "%$name%";
         $stmt = $this->context->connection->prepare("SELECT * FROM users WHERE name LIKE :name");

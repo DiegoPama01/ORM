@@ -7,21 +7,20 @@ $pass = '';
 
 $context = new DbContext($host, $db, $user, $pass);
 
-$userRepository = new Repository($context, 'User');
-$productRepository = new Repository($context, 'Product');
+$userRepository = new UserRepository($context);
+$productRepository = new ProductRepository($context);
 
-$newUser = new User();
-$newUser->name = 'Alice';
-$newUser->age = 30;
-$userRepository->insert($newUser);
-
-$users = $userRepository->getAll();
-foreach ($users as $user) {
-    echo $user->name . ', ' . $user->age . "\n";
+$usersByAge = $userRepository->getUsersByAge(30);
+foreach ($usersByAge as $user) {
+    echo "User by age 30: " . $user->name . ", " . $user->age . "\n";
 }
 
-$user = $userRepository->getById(1);
-$user->age = 31;
-$userRepository->update($user);
+$usersByNameLike = $userRepository->getUsersByNameLike('Al');
+foreach ($usersByNameLike as $user) {
+    echo "User by name like 'Al': " . $user->name . ", " . $user->age . "\n";
+}
 
-$userRepository->delete(1);
+$productsByPriceRange = $productRepository->getProductsByPriceRange(10, 100);
+foreach ($productsByPriceRange as $product) {
+    echo "Product in price range 10-100: " . $product->productName . ", " . $product->price . "\n";
+}
