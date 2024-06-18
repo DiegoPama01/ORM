@@ -7,34 +7,54 @@ class DbContext
     public function __construct($host, $db, $user, $pass)
     {
         $dsn = "mysql:host=$host;dbname=$db;charset=utf8mb4";
-        $this->connection = new PDO($dsn, $user, $pass);
-        $this->connection->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
+        $options = [
+            PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION,
+            PDO::ATTR_DEFAULT_FETCH_MODE => PDO::FETCH_ASSOC
+        ];
+        try {
+            $this->connection = new PDO($dsn, $user, $pass, $options);
+        } catch (PDOException $e) {
+            throw new PDOException('Connection error: ' . $e->getMessage());
+        }
     }
 
-    private function getTableName($entityClass)
+    public function getConnection()
     {
-        return strtolower($entityClass);
+        return $this->connection;
     }
 
-    public function getAll($entityClass)
+    public function getAll($entityClass, $tableName)
     {
-        $tableName = $this->getTableName($entityClass);
-        $stmt = $this->connection->query("SELECT * FROM `$tableName`");
+        $sql = "SELECT * FROM `$tableName`";
+        $stmt = $this->connection->query($sql);
         return $stmt->fetchAll(PDO::FETCH_CLASS, $entityClass);
     }
 
-    public function getById($entityClass, $id)
+    public function getById($entityClass, $tableName, $id)
     {
-        $tableName = $this->getTableName($entityClass);
-        $stmt = $this->connection->prepare("SELECT * FROM `$tableName` WHERE id = :id");
-        $stmt->bindParam(':id', $id, PDO::PARAM_INT);
+        $sql = "SELECT * FROM `$tableName` WHERE id = :id";
+        $stmt = $this->connection->prepare($sql);
+        $stmt->bindValue(':id', $id, PDO::PARAM_INT);
         $stmt->execute();
-        return $stmt->fetchObject($entityClass);
+        $instance = $stmt->fetch(PDO::FETCH_ASSOC);
+
+        //PDO to Entity conversion
+        if ($instance) {
+            $entity = new $entityClass();
+
+            foreach ($instance as $column => $value) {
+                if (property_exists($entity, $column)) {
+                    $entity->$column = $value;
+                }
+            }
+            return $entity;
+        } else {
+            return null;
+        }
     }
 
-    public function insert($entity)
+    public function insert($tableName, $entity)
     {
-        $tableName = $this->getTableName(get_class($entity));
         $columns = array_keys(get_object_vars($entity));
         $values = array_map(function ($column) {
             return ":$column";
@@ -42,16 +62,17 @@ class DbContext
 
         $sql = "INSERT INTO `$tableName` (" . implode(", ", $columns) . ") VALUES (" . implode(", ", $values) . ")";
         $stmt = $this->connection->prepare($sql);
+
         foreach ($columns as $column) {
             $stmt->bindValue(":$column", $entity->$column);
         }
+
         $stmt->execute();
         $entity->id = $this->connection->lastInsertId();
     }
 
-    public function update($entity)
+    public function update($tableName, $entity)
     {
-        $tableName = $this->getTableName(get_class($entity));
         $columns = array_keys(get_object_vars($entity));
         $setClause = implode(", ", array_map(function ($column) {
             return "$column = :$column";
@@ -59,18 +80,26 @@ class DbContext
 
         $sql = "UPDATE `$tableName` SET $setClause WHERE id = :id";
         $stmt = $this->connection->prepare($sql);
+
         foreach ($columns as $column) {
             $stmt->bindValue(":$column", $entity->$column);
         }
+
         $stmt->bindValue(':id', $entity->id, PDO::PARAM_INT);
-        $stmt->execute();
+
+        try {
+            $stmt->execute();
+        } catch (PDOException $e) {
+            echo 'Error while executing query' . $e->getMessage();
+            exit;
+        }
     }
 
-    public function delete($entityClass, $id)
+    public function delete($tableName, $id)
     {
-        $tableName = $this->getTableName($entityClass);
-        $stmt = $this->connection->prepare("DELETE FROM `$tableName` WHERE id = :id");
-        $stmt->bindParam(':id', $id, PDO::PARAM_INT);
+        $sql = "DELETE FROM `$tableName` WHERE id = :id";
+        $stmt = $this->connection->prepare($sql);
+        $stmt->bindValue(':id', $id, PDO::PARAM_INT);
         $stmt->execute();
     }
 }
