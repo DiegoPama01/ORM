@@ -3,14 +3,14 @@
 $host = 'localhost';
 $db = 'test_repositories';
 $user = 'root';
-$pass = '***********';
+$pass = '***';
 
 require_once "Database/DbContext.php";
 
 $context = new DbContext($host, $db, $user, $pass);
 
-require_once "D:/Proyectos/ORM/Models/Product/ProductRepository.php";
-require_once 'D:/Proyectos/ORM/Models/User/UserRepository.php';
+require_once "Models/Product/ProductRepository.php";
+require_once 'Models/User/UserRepository.php';
 
 $userRepository = new UserRepository($context);
 $productRepository = new ProductRepository($context);
