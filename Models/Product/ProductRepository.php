@@ -7,12 +7,12 @@ class ProductRepository extends Repository
 {
     public function __construct(DbContext $context)
     {
-        parent::__construct($context, 'Product', "products");
+        parent::__construct($context, 'Product');
     }
 
     public function getProductsByPriceRange($minPrice, $maxPrice)
     {
-        $stmt = $this->context->getConnection()->prepare("SELECT * FROM $this->tableName WHERE price BETWEEN :minPrice AND :maxPrice");
+        $stmt = $this->context->getConnection()->prepare("SELECT * FROM $this->entityClass::getTable() WHERE price BETWEEN :minPrice AND :maxPrice");
         $stmt->bindParam(':minPrice', $minPrice, PDO::PARAM_STR);
         $stmt->bindParam(':maxPrice', $maxPrice, PDO::PARAM_STR);
         $stmt->execute();

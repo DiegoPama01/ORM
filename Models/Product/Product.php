@@ -2,6 +2,7 @@
 include_once "../ORM/Database/Entity.php";
 class Product extends Entity
 {
+    protected static string $table = 'products';
     public string | null $productName;
     public int | null $price;
 

@@ -2,6 +2,8 @@
 include_once "../ORM/Database/Entity.php";
 class User extends Entity
 {
+    protected static string $table = 'users';
+    
     public string | null $name;
     public int | null $age;
 

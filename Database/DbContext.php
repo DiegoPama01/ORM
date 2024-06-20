@@ -23,38 +23,53 @@ class DbContext
         return $this->connection;
     }
 
-    public function getAll($entityClass, $tableName)
+    public function createEntity($data, $entityClass)
     {
-        $sql = "SELECT * FROM `$tableName`";
-        $stmt = $this->connection->query($sql);
-        return $stmt->fetchAll(PDO::FETCH_CLASS, $entityClass);
+        $entity = new $entityClass;
+
+        foreach ($data as $column => $value) {
+            if (property_exists($entity, $column)) {
+                $entity->$column = $value;
+            }
+        }
+
+        return $entity;
     }
 
-    public function getById($entityClass, $tableName, $id)
+    public function getAll($entityClass)
     {
+        $tableName = $entityClass::getTable();
+        $sql = "SELECT * FROM `$tableName`";
+        $stmt = $this->connection->query($sql);
+        $stmt->execute();
+        $instances = [];
+        while ($instance = $stmt->fetch(PDO::FETCH_ASSOC)) {
+            $instances[] = $this->createEntity($instance, $entityClass);
+        }
+        return $instances;
+    }
+
+    public function getById($entityClass, $id)
+    {
+        $tableName = $entityClass::getTable();
         $sql = "SELECT * FROM `$tableName` WHERE id = :id";
         $stmt = $this->connection->prepare($sql);
         $stmt->bindValue(':id', $id, PDO::PARAM_INT);
         $stmt->execute();
         $instance = $stmt->fetch(PDO::FETCH_ASSOC);
 
-        //PDO to Entity conversion
-        if ($instance) {
-            $entity = new $entityClass();
-
-            foreach ($instance as $column => $value) {
-                if (property_exists($entity, $column)) {
-                    $entity->$column = $value;
-                }
-            }
-            return $entity;
-        } else {
-            return null;
+        if (!$instance) {
+            return null; 
         }
+
+        return $this->createEntity($instance, $entityClass);
     }
 
-    public function insert($tableName, $entity)
+    public function insert($entity)
     {
+        $class = get_class($entity);
+        $tableName = $class::getTable();
+
         $columns = array_keys(get_object_vars($entity));
         $values = array_map(function ($column) {
             return ":$column";
@@ -67,12 +82,20 @@ class DbContext
             $stmt->bindValue(":$column", $entity->$column);
         }
 
-        $stmt->execute();
-        $entity->id = $this->connection->lastInsertId();
+        try {
+            $stmt->execute();
+            $entity->id = $this->connection->lastInsertId();
+        } catch (PDOException $e) {
+            echo 'Error inserting entity: ' . $e->getMessage();
+            exit;
+        }
     }
 
-    public function update($tableName, $entity)
+    public function update($entity)
     {
+        $class = get_class($entity);
+        $tableName = $class::getTable();
+
         $columns = array_keys(get_object_vars($entity));
         $setClause = implode(", ", array_map(function ($column) {
             return "$column = :$column";
@@ -90,16 +113,23 @@ class DbContext
         try {
             $stmt->execute();
         } catch (PDOException $e) {
-            echo 'Error while executing query' . $e->getMessage();
+            echo 'Error updating entity: ' . $e->getMessage();
             exit;
         }
     }
 
-    public function delete($tableName, $id)
+    public function delete($id,$entityClass)
     {
+        $tableName = $entityClass::getTable();
         $sql = "DELETE FROM `$tableName` WHERE id = :id";
         $stmt = $this->connection->prepare($sql);
         $stmt->bindValue(':id', $id, PDO::PARAM_INT);
-        $stmt->execute();
+
+        try {
+            $stmt->execute();
+        } catch (PDOException $e) {
+            echo 'Error deleting entity: ' . $e->getMessage();
+            exit;
+        }
     }
 }
