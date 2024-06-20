@@ -7,5 +7,10 @@ abstract class Entity
     public static function getTable() : string {
         return static::$table;
     }
+
+    public function __toString()
+    {
+        return get_class($this) . " (ID: " . $this->id . ")" . PHP_EOL;
+    }
 }
 

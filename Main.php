@@ -20,15 +20,18 @@ $homeRepository = new HomeRepository($context);
 
 // $homeRepository->insert(new Apartment("Test Street 10", 35500, true));
 
-$homeRepository->insert(new Bungalow("Test Street 100", 35500, 10));
-$bungalow = $homeRepository->getById(1,Bungalow::class);
-echo print_r($bungalow);
-$bungalow->numFloors += 2000;
-echo print_r($bungalow);
-$homeRepository->update($bungalow);
-$homeRepository->delete(10, Bungalow::class);
+// $homeRepository->insert(new Bungalow("Test Street 100", 35500, 10));
+// $bungalow = $homeRepository->getById(1,Bungalow::class);
+// echo $bungalow;
+// $bungalow->numFloors += 2000;
+// $homeRepository->update($bungalow);
+// $homeRepository->delete(10, Bungalow::class);
 
-// echo var_dump($homeRepository->getAll(Bungalow::class));
+$bungalows = $homeRepository->getAll(Bungalow::class);
+
+foreach ($bungalows as $bungalow) {
+    echo $bungalow . PHP_EOL;
+}
 // echo print_r($homeRepository->getById(1,"Apartment"));
 
 // $productRepository->insert(new Product("Avellanas", 120));
