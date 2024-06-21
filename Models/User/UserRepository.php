@@ -3,9 +3,10 @@ include_once "D:/Proyectos/ORM/Database/Repository.php";
 include_once "User.php";
 class UserRepository extends Repository
 {
+
     public function __construct(DbContext $context)
     {
-        parent::__construct($context, 'User');
+        parent::__construct($context, User::class);
     }
 
     public function getUsersByAge($age)

@@ -7,7 +7,7 @@ class ProductRepository extends Repository
 {
     public function __construct(DbContext $context)
     {
-        parent::__construct($context, 'Product');
+        parent::__construct($context, Product::class);
     }
 
     public function getProductsByPriceRange($minPrice, $maxPrice)

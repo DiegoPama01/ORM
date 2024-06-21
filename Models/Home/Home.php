@@ -2,8 +2,8 @@
 include_once "../ORM/Database/Entity.php";
 abstract class Home extends Entity
 {
-    public ?string $address;
-    public ?int $postalCode;
+    protected string $address;
+    protected int $postalCode;
 
     public function __construct($address = null, int $postalCode = null)
     {
@@ -20,19 +20,27 @@ abstract class Home extends Entity
 class Apartment extends Home
 {
     protected static string $table = 'apartments';
-    public bool $allowPets;
+    protected bool $allowPets;
 
-    public function __construct($address = null, int $postalCode = null, $allowPets = false)
+    public function __construct($array)
     {
-        parent::__construct($address, $postalCode);
-        $this->allowPets = $allowPets;
+        parent::__construct($array['address'], $array['postalCode']);
+        $this->allowPets = $array['allowPets'] ? $array['allowPets'] : false;
     }
+
+
+    public function __toString()
+    {
+        $allowPetsTxt = $this->allowPets ? 'true' : 'false';
+        return parent::__toString() . "Allow pets: $allowPetsTxt" . PHP_EOL;
+    }
+
 }
 
 class Bungalow extends Home
 {
     protected static string $table = 'bungalows';
-    public int $numFloors;
+    protected int $numFloors;
     public function __construct($address = null, int $postalCode = null, $numFloors = 1)
     {
         parent::__construct($address, $postalCode);

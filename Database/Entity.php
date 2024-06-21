@@ -1,11 +1,21 @@
 <?php
 abstract class Entity
 {
-    private static string $table;
-    public $id;
+    /**
+     * @ORM\Column(type="int", name="id")
+     * @ORM\GeneratedValue()
+     * @ORM\Id()
+     */
+    private $id;
 
-    public static function getTable() : string {
-        return static::$table;
+    public function __get($name)
+    {
+        return $this->$name;
+    }
+
+    public function __set($name, $value)
+    {
+        $this->$name = $value;
     }
 
     public function __toString()
@@ -13,4 +23,3 @@ abstract class Entity
         return get_class($this) . " (ID: " . $this->id . ")" . PHP_EOL;
     }
 }
-

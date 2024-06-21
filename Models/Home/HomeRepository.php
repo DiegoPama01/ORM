@@ -5,7 +5,7 @@ class HomeRepository extends Repository
 {
     public function __construct(DbContext $context)
     {
-        parent::__construct($context, 'Home');
+        parent::__construct($context, Home::class);
     }
 
     public function getAll($entityClass=null){

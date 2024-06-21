@@ -7,26 +7,30 @@ class Repository
     protected $context;
     protected $entityClass;
 
+    /**
+     * #TODO Añadir una propiedad tableName y un array asociativo con las propiedades. 
+     * Así la DBContext solo necesita utilizar los datos que le pasa el repository y no tiene que crear objetos cada vez que es utilizada.
+     */
+
+    //tableName???
+    //PropertyMapping???
+
     public function __construct(DbContext $context, $entityClass)
     {
         $this->context = $context;
         $this->entityClass = $entityClass;
     }
 
-    /**
- * @param string|null $entityClass
- * @return Entity[]
- */
-    public function getAll($entityClass=null)
+    public function getAll($entityClass = null)
     {
-        if($entityClass==null) $entityClass = $this->entityClass;
+        if ($entityClass == null) $entityClass = $this->entityClass;
 
-        return $this->context->getAll($this->entityClass); 
+        return $this->context->getAll($this->entityClass);
     }
 
-    public function getById($id,$entityClass=null)
+    public function getById($id, $entityClass = null)
     {
-        if($entityClass==null) $entityClass = $this->entityClass;
+        if ($entityClass == null) $entityClass = $this->entityClass;
 
         if (!is_int($id) || $id <= 0) {
             throw new InvalidArgumentException('ID must be a positive integer');
@@ -50,14 +54,14 @@ class Repository
         $this->context->update($entity);
     }
 
-    public function delete($id,$entityClass=null)
+    public function delete($id, $entityClass = null)
     {
-        if($entityClass==null) $entityClass = $this->entityClass;
+        if ($entityClass == null) $entityClass = $this->entityClass;
 
         if (!is_int($id) || $id <= 0) {
             throw new InvalidArgumentException('ID must be a positive integer');
         }
 
-        $this->context->delete($id,$entityClass);
+        $this->context->delete($id, $entityClass);
     }
 }
