@@ -8,7 +8,7 @@ abstract class Entity
      * @ORM\GeneratedValue()
      * @ORM\Id()
      */
-    private $id;
+    public $id;
 
     public function __get($name)
     {

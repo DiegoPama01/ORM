@@ -139,16 +139,9 @@ class DbContext
             $values[":$columnName"] = $entity->$columnName;
         }
 
-        $idColumn = 'id';
+        $idColumnName = $columns['id']->name ?? 'id';
 
-        foreach ($columns as $column) {
-            if ($column->isId()) {
-                $idColumn = $column->name;
-                break;
-            }
-        }
-
-        $sql = "UPDATE `$tableName` SET " . implode(", ", $setClause) . " WHERE `$idColumn` = :id";
+        $sql = "UPDATE `$tableName` SET " . implode(", ", $setClause) . " WHERE `$idColumnName` = :id";
         $stmt = $this->connection->prepare($sql);
 
         foreach ($values as $placeholder => $value) {

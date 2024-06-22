@@ -3,9 +3,7 @@
 require_once __DIR__ . '/vendor/autoload.php';
 
 use ORM\Database\DbContext;
-use ORM\Annotations\AnnotationManager;
-use ORM\Models\User\UserRepository;
-use ORM\Models\User\User;
+use ORM\Models\Home;
 
 $host = 'localhost';
 $db = 'test_repositories';
@@ -15,13 +13,20 @@ $pass = '***';
 
 $context = new DbContext($host, $db, $user, $pass);
 
-$userRepository = new UserRepository($context);
+$repository = new Home\HomeRepository($context);
 
-$user = $userRepository->getById(37);
+$rows = $repository->getAll(Home\Apartment::class);
 
-echo $user;
+$product = $rows[0];
 
-$annotations = AnnotationManager::getClassAnnotations(User::class);
+$product->address = "Example $product->id";
 
-echo "Annotations for table User:\n";
-print_r($annotations);
+$repository->update($product);
+
+$repository->delete($rows[1]->id,Home\Apartment::class);
+
+$repository->insert(new Home\Apartment(['address' => "test", 'postalCode' => 2020, 'allowPets' => true]));
+
+foreach($rows as $row){
+    echo $row;
+}

@@ -1,4 +1,5 @@
 <?php
+
 namespace ORM\Annotations;
 
 use ReflectionClass;
@@ -43,6 +44,8 @@ class AnnotationManager
 
         return $propertyAnnotations;
     }
+
+
 
     private static function getClassAnnotationsFromDocComment($docComment)
     {

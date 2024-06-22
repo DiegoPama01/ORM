@@ -21,23 +21,33 @@ class Repository
 
         $annotations = AnnotationManager::getClassAnnotations($className);
 
-        $this->table = $annotations["table"];
-        $this->columns = $annotations["columns"];
+        $this->table = $annotations["table"] ?? [];
+        $this->columns = $annotations["columns"] ?? [];
     }
 
     public function getAll($className = null)
     {
         if ($className == null) {
             $className = $this->className;
+        } else {
+            $annotations = AnnotationManager::getClassAnnotations($className);
+
+            $this->table = $annotations["table"] ?? [];
+            $this->columns = $annotations["columns"] ?? [];
         }
 
-        return $this->context->getAll($this->className, $this->table, $this->columns);
+        return $this->context->getAll($className, $this->table, $this->columns);
     }
 
     public function getById($id, $className = null)
     {
         if ($className == null) {
             $className = $this->className;
+        } else {
+            $annotations = AnnotationManager::getClassAnnotations($className);
+
+            $this->table = $annotations["table"] ?? [];
+            $this->columns = $annotations["columns"] ?? [];
         }
 
         if (!is_int($id) || $id <= 0) {
@@ -66,6 +76,11 @@ class Repository
     {
         if ($className == null) {
             $className = $this->className;
+        } else {
+            $annotations = AnnotationManager::getClassAnnotations($className);
+
+            $this->table = $annotations["table"] ?? [];
+            $this->columns = $annotations["columns"] ?? [];
         }
 
         if (!is_int($id) || $id <= 0) {

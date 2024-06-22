@@ -1,12 +1,19 @@
 <?php
+
 namespace ORM\Models\Home;
 
 use ORM\Models\Entity;
 
 abstract class Home extends Entity
 {
-    protected string $address;
-    protected int $postalCode;
+    /**
+     * @ORM\Column(type="string", name="address")
+     */
+    protected ?string $address;
+    /**
+     * @ORM\Column(type="integer", name="postalCode")
+     */
+    protected ?int $postalCode;
 
     public function __construct($address = null, int $postalCode = null)
     {
@@ -20,14 +27,24 @@ abstract class Home extends Entity
     }
 }
 
+/**
+ * @ORM\Table(name="apartments")
+ */
 class Apartment extends Home
 {
+    /**
+     * @ORM\Column(type="boolean", name="allowPets")
+     */
     protected bool $allowPets;
 
-    public function __construct($array)
+    public function __construct($array = [])
     {
-        parent::__construct($array['address'], $array['postalCode']);
-        $this->allowPets = $array['allowPets'] ? $array['allowPets'] : false;
+        $address = $array['address'] ?? null;
+        $postalCode = $array['postalCode'] ?? null;
+        $allowPets = $array['allowPets'] ?? false;
+
+        parent::__construct($address, $postalCode);
+        $this->allowPets = $allowPets;
     }
 
 
@@ -36,12 +53,18 @@ class Apartment extends Home
         $allowPetsTxt = $this->allowPets ? 'true' : 'false';
         return parent::__toString() . "Allow pets: $allowPetsTxt" . PHP_EOL;
     }
-
 }
 
+/**
+ * @ORM\Table(name="bungalows")
+ */
 class Bungalow extends Home
 {
+    /**
+     * @ORM\Column(type="integer", name="numFloors")
+     */
     protected int $numFloors;
+
     public function __construct($address = null, int $postalCode = null, $numFloors = 1)
     {
         parent::__construct($address, $postalCode);

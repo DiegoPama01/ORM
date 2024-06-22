@@ -1,6 +1,6 @@
 <?php
 
-namespace ORM\Models\Products;
+namespace ORM\Models\Product;
 
 use ORM\Database\DbContext;
 use ORM\Models\Repository;
