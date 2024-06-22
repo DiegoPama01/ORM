@@ -1,8 +1,9 @@
 <?php
-include_once "../ORM/Database/Entity.php";
+namespace ORM\Models\Products;
+use ORM\Models\Entity;
+
 class Product extends Entity
 {
-    protected static string $table = 'products';
     public ?string $productName;
     public ?int $price;
 

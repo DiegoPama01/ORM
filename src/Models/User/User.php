@@ -1,8 +1,6 @@
 <?php
-include_once "../ORM/Database/Entity.php";
-
-use ORM\Annotations as ORM;
-
+namespace ORM\Models\User;
+use ORM\Models\Entity;
 /**
  * @ORM\Table(name="users")
  */

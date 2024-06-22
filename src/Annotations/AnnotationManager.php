@@ -1,4 +1,8 @@
 <?php
+namespace ORM\Annotations;
+
+use ReflectionClass;
+
 class AnnotationManager
 {
     public static function getClassAnnotations(string $className)
@@ -7,7 +11,9 @@ class AnnotationManager
         $annotations = [];
 
         $classAnnotations = self::getClassAnnotationsFromDocComment($reflectionClass->getDocComment());
-        $annotations['table'] = $classAnnotations["ORM\Table"]["name"];
+        if (isset($classAnnotations['ORM\\Table'])) {
+            $annotations['table'] = new Table($classAnnotations['ORM\\Table']);
+        }
 
         $propertyAnnotations = self::getClassPropertiesAnnotations($reflectionClass);
         $annotations['columns'] = $propertyAnnotations;
@@ -19,31 +25,24 @@ class AnnotationManager
     {
         $propertyAnnotations = [];
         $currentClass = $reflectionClass;
-    
+
         do {
             foreach ($currentClass->getProperties() as $property) {
                 $propertyName = $property->getName();
                 $propertyDocComment = $property->getDocComment();
-    
+
                 $annotations = self::getClassAnnotationsFromDocComment($propertyDocComment);
-    
-                if (!isset($propertyAnnotations[$propertyName])) {
-                    $propertyAnnotations[$propertyName] = $annotations;
-                } else {
-                    $propertyAnnotations[$propertyName] = array_merge_recursive($propertyAnnotations[$propertyName], $annotations);
+
+                if (isset($annotations['ORM\\Column'])) {
+                    $columnAnnotation = $annotations['ORM\\Column'];
+                    $propertyAnnotations[$propertyName] = new Column($columnAnnotation);
                 }
             }
             $currentClass = $currentClass->getParentClass();
         } while ($currentClass !== false);
 
-        $finalAnnotations = [];
-        foreach ($propertyAnnotations as $propertyName => $annotations) {
-            $finalAnnotations[$propertyName] = isset($annotations['ORM\Column']) ? $annotations['ORM\Column'] : [];
-        }
-    
-        return $finalAnnotations;
+        return $propertyAnnotations;
     }
-    
 
     private static function getClassAnnotationsFromDocComment($docComment)
     {
@@ -52,8 +51,8 @@ class AnnotationManager
         preg_match_all('/@(ORM\\\\)?(\w+)\\b\s*(\([^)]*\))?/', $docComment, $matches, PREG_SET_ORDER);
         foreach ($matches as $match) {
             $ormPrefix = $match[1] ?? '';
-            $annotationName = $match[2]; 
-            $params = isset($match[3]) ? self::parseParams($match[3]) : []; 
+            $annotationName = $match[2];
+            $params = isset($match[3]) ? self::parseParams($match[3]) : [];
 
             $annotations[$ormPrefix . $annotationName] = $params;
         }
@@ -64,11 +63,13 @@ class AnnotationManager
     private static function parseParams($paramString)
     {
         $params = [];
-        preg_match_all('/(\w+)\s*=\s*(["\']?)(.*?)\2(?=\s|\)|,)/', $paramString, $matches, PREG_SET_ORDER);
+        preg_match_all('/(\w+)\s*=\s*([\'"]?)(.*?)\2(?=[\s\),])/', $paramString, $matches, PREG_SET_ORDER);
+
+
+
         foreach ($matches as $match) {
             $params[$match[1]] = $match[3];
         }
         return $params;
     }
 }
-?>

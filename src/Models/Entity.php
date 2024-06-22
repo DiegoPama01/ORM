@@ -1,4 +1,6 @@
 <?php
+namespace ORM\Models;
+
 abstract class Entity
 {
     /**

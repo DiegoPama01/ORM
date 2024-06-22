@@ -1,5 +1,8 @@
 <?php
-include_once "../ORM/Database/Entity.php";
+namespace ORM\Models\Home;
+
+use ORM\Models\Entity;
+
 abstract class Home extends Entity
 {
     protected string $address;
@@ -19,7 +22,6 @@ abstract class Home extends Entity
 
 class Apartment extends Home
 {
-    protected static string $table = 'apartments';
     protected bool $allowPets;
 
     public function __construct($array)
@@ -39,7 +41,6 @@ class Apartment extends Home
 
 class Bungalow extends Home
 {
-    protected static string $table = 'bungalows';
     protected int $numFloors;
     public function __construct($address = null, int $postalCode = null, $numFloors = 1)
     {

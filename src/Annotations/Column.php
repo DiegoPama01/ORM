@@ -13,7 +13,7 @@ class Column
 
     public function __construct(array $values)
     {
-        $this->type = $values['type'] ?? null;
+        $this->type = $values['type'] ?? "string";
         $this->name = $values['name'] ?? null;
     }
 }

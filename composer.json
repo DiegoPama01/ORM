@@ -1,0 +1,17 @@
+{
+    "name": "diegopama/orm",
+    "description": "PHP ORM",
+    "type": "project",
+    "autoload": {
+        "psr-4": {
+            "ORM\\": "src/"
+        }
+    },
+    "authors": [
+        {
+            "name": "DiegoPama01",
+            "email": "diego2001pama@gmail.com"
+        }
+    ],
+    "require": {}
+}

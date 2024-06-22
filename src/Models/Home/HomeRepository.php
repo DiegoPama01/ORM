@@ -1,6 +1,10 @@
 <?php
-include_once "D:/Proyectos/ORM/Database/Repository.php";
-include_once "Home.php";
+namespace ORM\Models\Home;
+
+use ORM\Database\DbContext;
+use ORM\Models\Repository;
+use PDO;
+
 class HomeRepository extends Repository
 {
     public function __construct(DbContext $context)
@@ -9,7 +13,7 @@ class HomeRepository extends Repository
     }
 
     public function getAll($entityClass=null){
-        return $this->context->getAll($entityClass);
+        return parent::getAll($entityClass);
     }
 
 }
