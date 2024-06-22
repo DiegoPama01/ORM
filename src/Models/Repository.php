@@ -61,15 +61,26 @@ class Repository
         if (!is_object($entity) || !($entity instanceof $this->className)) {
             throw new InvalidArgumentException('The entity must be from the expected type');
         }
-        $this->context->insert($entity, $this->table, $this->columns);
+        $annotations = AnnotationManager::getClassAnnotations(get_class($entity));
+
+        $tableName = $annotations['table'];
+        $columns = $annotations['columns'];
+
+        $this->context->insert($entity, $tableName, $columns);
     }
+
 
     public function update(Entity $entity)
     {
         if (!is_object($entity) || !($entity instanceof $this->className)) {
             throw new InvalidArgumentException('The entity must be from the expected type');
         }
-        $this->context->update($entity, $this->table, $this->columns);
+        $annotations = AnnotationManager::getClassAnnotations(get_class($entity));
+
+        $tableName = $annotations['table'];
+        $columns = $annotations['columns'];
+
+        $this->context->update($entity, $tableName, $columns);
     }
 
     public function delete($id, $className = null)

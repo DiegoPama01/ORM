@@ -29,9 +29,9 @@ class DbContext
         return $this->connection;
     }
 
-    public function createEntity($data, $entityClass, $columns)
+    public function createEntity($data, $className, $columns)
     {
-        $entity = new $entityClass;
+        $entity = new $className;
 
         foreach ($data as $column => $value) {
             if (property_exists($entity, $column)) {
@@ -82,8 +82,10 @@ class DbContext
 
     public function insert(Entity $entity, $table, $columns)
     {
+
         $tableName = $table->name;
         $columnNames = array_keys($columns);
+        
         $columnNamesSQL = [];
         $placeholders = [];
         $values = [];
@@ -103,9 +105,11 @@ class DbContext
             if (isset($columns[substr($param, 1)]->type)) {
                 switch ($columns[substr($param, 1)]->type) {
                     case 'integer':
+                    case 'int':
                         $paramType = PDO::PARAM_INT;
                         break;
                     case 'boolean':
+                    case 'bool':
                         $paramType = PDO::PARAM_BOOL;
                         break;
                     default:
