@@ -3,6 +3,7 @@
 namespace ORM\Database;
 
 use ORM\Models\Entity;
+use ORM\Annotations\AnnotationManager;
 use PDO;
 use PDOException;
 
@@ -52,69 +53,164 @@ class DbContext
     {
         $tableName = $table->name;
         $sql = "SELECT * FROM `$tableName`";
-        $stmt = $this->connection->query($sql);
-        $stmt->execute();
+        $stmt = $this->executeQuery($sql);
         $instances = [];
+
         while ($instance = $stmt->fetch(PDO::FETCH_ASSOC)) {
-            $instances[] = $this->createEntity($instance, $className, $columns);
+            $entity = $this->createEntity($instance, $className, $columns);
+            $this->resolveReferences($entity, $columns);
+            $instances[] = $entity;
         }
+
         return $instances;
     }
 
     public function getById($id, $className, $table, $columns)
     {
         $tableName = $table->name;
-
         $idColumnName = $columns['id']->name ?? 'id';
-
         $sql = "SELECT * FROM `$tableName` WHERE `$idColumnName` = :id";
-        $stmt = $this->connection->prepare($sql);
-        $stmt->bindValue(':id', $id, PDO::PARAM_INT);
-        $stmt->execute();
+        $stmt = $this->executeQuery($sql, [':id' => $id]);
         $instance = $stmt->fetch(PDO::FETCH_ASSOC);
 
         if (!$instance) {
             return null;
         }
 
-        return $this->createEntity($instance, $className, $columns);
+        $entity = $this->createEntity($instance, $className, $columns);
+        $this->resolveReferences($entity, $columns);
+
+        return $entity;
     }
 
     public function insert(Entity $entity, $table, $columns)
     {
-
         $tableName = $table->name;
+        $parent = $entity->getParent();
+
+        if ($parent !== null) {
+            $annotations = AnnotationManager::getClassAnnotations(get_class($parent));
+            $parentColumns = array_keys($annotations['columns']);
+
+            if ($annotations['table']->name !== null) {
+                $this->insert($parent, $annotations['table'], $annotations['columns']);
+                $columns = array_diff_key($columns, array_flip(array_diff($parentColumns, ['id'])));
+            }
+        }
+
         $columnNames = array_keys($columns);
-        
         $columnNamesSQL = [];
         $placeholders = [];
         $values = [];
 
         foreach ($columnNames as $columnName) {
-            $column = $columns[$columnName];
-            $columnNameSQL = $column->name ?? $column;
+            $column = $columns[$columnName] ?? null;
+            if ($column !== null && isset($column->references)) {
+                preg_match('/(\w+)\((\w+)\)/', $column->references, $matches);
+                $refProperty = $matches[2];
+                $entity->$columnName = $parent->$refProperty;
+            }
+
+            $columnNameSQL = $column->name ?? $columnName;
             $columnNamesSQL[] = "`$columnNameSQL`";
             $placeholders[] = ":$columnName";
             $values[":$columnName"] = $entity->$columnName;
         }
 
         $sql = "INSERT INTO `$tableName` (" . implode(", ", $columnNamesSQL) . ") VALUES (" . implode(", ", $placeholders) . ")";
+        $this->executeQuery($sql, $values);
+
+        try {
+            $entity->id = $this->connection->lastInsertId();
+        } catch (PDOException $e) {
+            throw new PDOException('Error inserting entity: ' . $e->getMessage());
+        }
+    }
+
+    public function update(Entity $entity, $table, $columns)
+    {
+        $tableName = $table->name;
+        $idColumnName = $columns['id']->name ?? 'id';
+
+        $parent = $entity->getParent();
+        if ($parent !== null) {
+            $annotations = AnnotationManager::getClassAnnotations(get_class($parent));
+            $parentColumns = array_keys($annotations['columns']);
+
+            foreach ($columns as $columnName => $column) {
+                if (isset($column->references)) {
+                    preg_match('/(\w+)\((\w+)\)/', $column->references, $matches);
+                    $refProperty = $matches[2];
+                    $parent->$refProperty = $entity->$columnName;
+                }
+            }
+
+            if ($annotations['table']->name !== null) {
+                $this->update($parent, $annotations['table'], $annotations['columns']);
+                $columns = array_diff_key($columns, array_flip(array_diff($parentColumns, ['id'])));
+            }
+        }
+
+        $columnNames = array_keys($columns);
+        $setClause = [];
+        $values = [];
+
+        foreach ($columnNames as $columnName) {
+            $column = $columns[$columnName];
+            $columnNameSQL = $column->name ?? $columnName;
+            $setClause[] = "`$columnNameSQL` = :$columnName";
+            $values[":$columnName"] = $entity->$columnName;
+        }
+
+        $sql = "UPDATE `$tableName` SET " . implode(", ", $setClause) . " WHERE `$idColumnName` = :id";
+        $values[':id'] = $entity->id;
+        $this->executeQuery($sql, $values);
+    }
+
+    public function delete($id, $table, $columns)
+    {
+        $tableName = $table->name;
+        $idColumnName = $columns['id']->name ?? 'id';
+        $sql = "DELETE FROM `$tableName` WHERE `$idColumnName` = :id";
+        $this->executeQuery($sql, [':id' => $id]);
+    }
+
+    private function resolveReferences($entity, $columns)
+    {
+        foreach ($columns as $columnName => $column) {
+            if (!isset($column->references)) {
+                continue;
+            }
+            $annotations = AnnotationManager::getClassAnnotations(get_parent_class($entity));
+            $parentTable = $annotations['table'];
+            $parentColumns = $annotations['columns'];
+            $relatedEntity = $this->getById($entity->$columnName, get_parent_class($entity), $parentTable, $parentColumns);
+
+            if ($relatedEntity === null) {
+                continue;
+            }
+
+            $properties = $relatedEntity->getProperties();
+
+            foreach ($properties as $property => $value) {
+                if (property_exists($entity, $property) && !isset($entity->$property)) {
+                    $entity->$property = $value;
+                }
+            }
+        }
+    }
+
+    private function executeQuery($sql, $params = [])
+    {
         $stmt = $this->connection->prepare($sql);
 
-        foreach ($values as $param => $value) {
-            if (isset($columns[substr($param, 1)]->type)) {
-                switch ($columns[substr($param, 1)]->type) {
-                    case 'integer':
-                    case 'int':
-                        $paramType = PDO::PARAM_INT;
-                        break;
-                    case 'boolean':
-                    case 'bool':
-                        $paramType = PDO::PARAM_BOOL;
-                        break;
-                    default:
-                        $paramType = PDO::PARAM_STR;
-                }
+        foreach ($params as $param => $value) {
+            $paramType = PDO::PARAM_STR;
+
+            if (is_int($value)) {
+                $paramType = PDO::PARAM_INT;
+            } elseif (is_bool($value)) {
+                $paramType = PDO::PARAM_BOOL;
             }
 
             $stmt->bindValue($param, $value, $paramType);
@@ -122,70 +218,9 @@ class DbContext
 
         try {
             $stmt->execute();
-            $entity->id = $this->connection->lastInsertId();
+            return $stmt;
         } catch (PDOException $e) {
-            echo 'Error inserting entity: ' . $e->getMessage();
-            exit;
-        }
-    }
-
-    public function update(Entity $entity, $table, $columns)
-    {
-        $tableName = $table->name;
-        $columnNames = array_keys($columns);
-        $setClause = [];
-        $values = [];
-
-        foreach ($columnNames as $columnName) {
-            $column = $columns[$columnName];
-            $columnNameSQL = $column->name ?? $column;
-            $setClause[] = "`$columnNameSQL` = :$columnName";
-            $values[":$columnName"] = $entity->$columnName;
-        }
-
-        $idColumnName = $columns['id']->name ?? 'id';
-
-        $sql = "UPDATE `$tableName` SET " . implode(", ", $setClause) . " WHERE `$idColumnName` = :id";
-        $stmt = $this->connection->prepare($sql);
-
-        foreach ($values as $placeholder => $value) {
-            $paramType = PDO::PARAM_STR;
-
-            // Determine the parameter type based on column annotations
-            if ($columns[substr($placeholder, 1)]->type === 'integer') {
-                $paramType = PDO::PARAM_INT;
-            } elseif ($columns[substr($placeholder, 1)]->type === 'boolean') {
-                $paramType = PDO::PARAM_BOOL;
-            }
-
-            $stmt->bindValue($placeholder, $value, $paramType);
-        }
-
-        $stmt->bindValue(':id', $entity->id, PDO::PARAM_INT);
-
-        try {
-            $stmt->execute();
-        } catch (PDOException $e) {
-            echo 'Error updating entity: ' . $e->getMessage();
-            exit;
-        }
-    }
-
-    public function delete($id, $table, $columns)
-    {
-        $tableName = $table->name;
-
-        $idColumnName = $columns['id']->name ?? 'id';
-
-        $sql = "DELETE FROM `$tableName` WHERE `$idColumnName` = :id";
-        $stmt = $this->connection->prepare($sql);
-        $stmt->bindValue(':id', $id, PDO::PARAM_INT);
-
-        try {
-            $stmt->execute();
-        } catch (PDOException $e) {
-            echo 'Error deleting entity: ' . $e->getMessage();
-            exit;
+            throw new PDOException('Error executing query: ' . $e->getMessage());
         }
     }
 }

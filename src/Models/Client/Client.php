@@ -39,7 +39,7 @@ class PremiumClient extends Client
     /**
      * @ORM\Column(type="integer", name="idClientFK", references="clients(id)")
      */
-    protected ?int $idClient;
+    protected ?int $idClientFK;
 
     /**
      * @ORM\Column(type="string", name="password")
@@ -50,5 +50,6 @@ class PremiumClient extends Client
     {
         parent::__construct($name,$age,$wage);
         $this->password = $password;
+        $this->idClientFK = null;
     }
 }
