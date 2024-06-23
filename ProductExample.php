@@ -14,13 +14,19 @@ $context = new DbContext($host,$db,$user,$pass);
 
 $repository = new Product\ProductRepository($context);
 
-$rows = $repository->getAll();
+$newItem = new Product\Product("Prueba",40);
+
+$repository->insert($newItem);
 
 $item = $repository->getById(1);
 
-$item->price = 10;
+$item->price++;
 
 $repository->update($item);
+
+$repository->delete($item->price);
+
+$rows = $repository->getAll();
 
 foreach($rows as $row){
     echo $row;

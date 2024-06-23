@@ -37,12 +37,8 @@ class Apartment extends Home
      */
     protected bool $allowPets;
 
-    public function __construct($array = [])
+    public function __construct($address = null, int $postalCode = null, $allowPets = false)
     {
-        $address = $array['address'] ?? null;
-        $postalCode = $array['postalCode'] ?? null;
-        $allowPets = $array['allowPets'] ?? false;
-
         parent::__construct($address, $postalCode);
         $this->allowPets = $allowPets;
     }
