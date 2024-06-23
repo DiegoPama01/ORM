@@ -31,25 +31,3 @@ class Client extends Entity
     }
 }
 
-/**
- * @ORM\Table(name="premium_clients")
- */
-class PremiumClient extends Client
-{
-    /**
-     * @ORM\Column(type="integer", name="idClientFK", references="clients(id)")
-     */
-    protected ?int $idClientFK;
-
-    /**
-     * @ORM\Column(type="string", name="password")
-     */
-    protected ?string $password;
-
-    public function __construct($name = null, int $age = null, int $wage = null, $password=null)
-    {
-        parent::__construct($name,$age,$wage);
-        $this->password = $password;
-        $this->idClientFK = null;
-    }
-}

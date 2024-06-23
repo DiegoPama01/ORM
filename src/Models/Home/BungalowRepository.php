@@ -1,14 +1,14 @@
 <?php
-namespace ORM\Models\Client;
+namespace ORM\Models\Home;
 
 use ORM\Database\DbContext;
 use ORM\Models\Repository;
 
-class ClientRepository extends Repository
+class BungalowRepository extends Repository
 {
-
     public function __construct(DbContext $context)
     {
-        parent::__construct($context, Client::class);
+        parent::__construct($context, Bungalow::class);
     }
 }
+

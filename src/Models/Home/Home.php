@@ -27,48 +27,6 @@ abstract class Home extends Entity
     }
 }
 
-/**
- * @ORM\Table(name="apartments")
- */
-class Apartment extends Home
-{
-    /**
-     * @ORM\Column(type="boolean", name="allowPets")
-     */
-    protected bool $allowPets;
-
-    public function __construct($address = null, int $postalCode = null, $allowPets = false)
-    {
-        parent::__construct($address, $postalCode);
-        $this->allowPets = $allowPets;
-    }
 
 
-    public function __toString()
-    {
-        $allowPetsTxt = $this->allowPets ? 'true' : 'false';
-        return parent::__toString() . "Allow pets: $allowPetsTxt" . PHP_EOL;
-    }
-}
 
-/**
- * @ORM\Table(name="bungalows")
- */
-class Bungalow extends Home
-{
-    /**
-     * @ORM\Column(type="integer", name="numFloors")
-     */
-    protected int $numFloors;
-
-    public function __construct($address = null, int $postalCode = null, $numFloors = 1)
-    {
-        parent::__construct($address, $postalCode);
-        $this->numFloors = $numFloors;
-    }
-
-    public function __toString()
-    {
-        return parent::__toString()  . "Number of floors: $this->numFloors" . PHP_EOL;
-    }
-}

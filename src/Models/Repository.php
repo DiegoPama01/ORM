@@ -25,35 +25,17 @@ class Repository
         $this->columns = $annotations["columns"] ?? [];
     }
 
-    public function getAll($className = null)
+    public function getAll()
     {
-        if ($className == null) {
-            $className = $this->className;
-        } else {
-            $annotations = AnnotationManager::getClassAnnotations($className);
-
-            $this->table = $annotations["table"] ?? [];
-            $this->columns = $annotations["columns"] ?? [];
-        }
-
-        return $this->context->getAll($className, $this->table, $this->columns);
+        return $this->context->getAll($this->className, $this->table, $this->columns);
     }
 
-    public function getById($id, $className = null)
+    public function getById($id)
     {
-        if ($className == null) {
-            $className = $this->className;
-        } else {
-            $annotations = AnnotationManager::getClassAnnotations($className);
-
-            $this->table = $annotations["table"] ?? [];
-            $this->columns = $annotations["columns"] ?? [];
-        }
-
         if (!is_int($id) || $id <= 0) {
             throw new InvalidArgumentException('ID must be a positive integer');
         }
-        return $this->context->getById($id, $className, $this->table, $this->columns);
+        return $this->context->getById($id, $this->className, $this->table, $this->columns);
     }
 
     public function insert(Entity $entity)
@@ -61,39 +43,20 @@ class Repository
         if (!is_object($entity) || !($entity instanceof $this->className)) {
             throw new InvalidArgumentException('The entity must be from the expected type');
         }
-        $annotations = AnnotationManager::getClassAnnotations(get_class($entity));
 
-        $tableName = $annotations['table'];
-        $columns = $annotations['columns'];
-
-        $this->context->insert($entity, $tableName, $columns);
+        $this->context->insert($entity, $this->table, $this->columns);
     }
-
 
     public function update(Entity $entity)
     {
         if (!is_object($entity) || !($entity instanceof $this->className)) {
             throw new InvalidArgumentException('The entity must be from the expected type');
         }
-        $annotations = AnnotationManager::getClassAnnotations(get_class($entity));
-
-        $tableName = $annotations['table'];
-        $columns = $annotations['columns'];
-
-        $this->context->update($entity, $tableName, $columns);
+        $this->context->update($entity, $this->table, $this->columns);
     }
 
-    public function delete($id, $className = null)
+    public function delete($id)
     {
-        if ($className == null) {
-            $className = $this->className;
-        } else {
-            $annotations = AnnotationManager::getClassAnnotations($className);
-
-            $this->table = $annotations["table"] ?? [];
-            $this->columns = $annotations["columns"] ?? [];
-        }
-
         if (!is_int($id) || $id <= 0) {
             throw new InvalidArgumentException('ID must be a positive integer');
         }

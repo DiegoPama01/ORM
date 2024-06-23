@@ -1,23 +1,23 @@
 <?php
 
 use ORM\Database\DbContext;
-use ORM\Models\Product;
+use ORM\Models\User;
 
 $context = new DbContext($host,$db,$user,$pass);
 
-$repository = new Product\ProductRepository($context);
+$repository = new User\UserRepository($context);
 
-$newItem = new Product\Product("Prueba",40);
+$newItem = new User\User("Diego", 10);
 
 $repository->insert($newItem);
 
-$item = $repository->getById(12);
+$item = $repository->getById(37);
 
-$item->price++;
+$item->age++;
 
 $repository->update($item);
 
-$repository->delete($item->price);
+$repository->delete($item->age);
 
 $rows = $repository->getAll();
 

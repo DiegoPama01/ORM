@@ -4,11 +4,11 @@ namespace ORM\Models\Client;
 use ORM\Database\DbContext;
 use ORM\Models\Repository;
 
-class ClientRepository extends Repository
+class PremiumClientRepository extends Repository
 {
 
     public function __construct(DbContext $context)
     {
-        parent::__construct($context, Client::class);
+        parent::__construct($context, PremiumClient::class);
     }
 }

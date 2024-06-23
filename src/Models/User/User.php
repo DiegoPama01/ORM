@@ -20,4 +20,9 @@ class User extends Entity
         $this->name = $name;
         $this->age = $age;
     }
+
+    public function __toString()
+    {
+        return parent::__toString() . "Name: $this->name" . PHP_EOL . "Age: $this->age" . PHP_EOL;
+    }
 }
