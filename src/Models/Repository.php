@@ -63,4 +63,19 @@ class Repository
 
         $this->context->delete($id, $this->table, $this->columns);
     }
+
+    public function beginTransaction()
+    {
+        $this->context->beginTransaction();
+    }
+
+    public function commit()
+    {
+        $this->context->commit();
+    }
+
+    public function rollback()
+    {
+        $this->context->rollBack();
+    }
 }

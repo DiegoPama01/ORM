@@ -3,7 +3,6 @@
 namespace ORM\Database;
 
 use ORM\Models\Entity;
-use ORM\Annotations\AnnotationManager;
 use PDO;
 use PDOException;
 
@@ -28,6 +27,21 @@ class DbContext
     public function getConnection()
     {
         return $this->connection;
+    }
+
+    public function beginTransaction()
+    {
+        $this->connection->beginTransaction();
+    }
+
+    public function commit()
+    {
+        $this->connection->commit();
+    }
+
+    public function rollback()
+    {
+        $this->connection->rollBack();
     }
 
     public function createEntity($data, $className, $columns)
