@@ -30,7 +30,7 @@ class Repository
         return $this->context->getAll($this->className, $this->table, $this->columns);
     }
 
-    public function getById($id)
+    public function getById($id) : Entity
     {
         if (!is_int($id) || $id <= 0) {
             throw new InvalidArgumentException('ID must be a positive integer');
@@ -79,7 +79,7 @@ class Repository
         $this->context->rollBack();
     }
 
-    public function getReferredEntity($entity, $propertyName, $className)
+    public function getReferredEntity(Entity $entity, $propertyName, $className) : Entity
     {
         if (!isset($this->columns[$propertyName]->references)) {
             return null;
