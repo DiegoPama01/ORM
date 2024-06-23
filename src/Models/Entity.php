@@ -1,6 +1,7 @@
 <?php
 
 namespace ORM\Models;
+use ORM\Annotations\AnnotationManager;
 
 abstract class Entity
 {
@@ -46,7 +47,9 @@ abstract class Entity
         return $parent;
     }
 
-    public function getProperties(){
+    public function getProperties()
+    {
         return get_object_vars($this);
     }
+
 }

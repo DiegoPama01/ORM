@@ -78,4 +78,17 @@ class Repository
     {
         $this->context->rollBack();
     }
+
+    public function getReferredEntity($entity, $propertyName, $className)
+    {
+        if (!isset($this->columns[$propertyName]->references)) {
+            return null;
+        }
+        $annotations = AnnotationManager::getClassAnnotations($className);
+
+        $table = $annotations['table'];
+        $columns = $annotations['columns'];
+
+        return $this->context->getById($entity->$propertyName, $className, $table, $columns);
+    }
 }

@@ -23,6 +23,10 @@ $premiumRepository->insert($newPremium);
 
 $item = $premiumRepository->getById(7);
 
+//Obtenemos el objeto al que hace referencia una clave Foranea
+
+$otro = $premiumRepository->getReferredEntity($item, 'idClientFK', Client\Client::class);
+
 $item->password = "Contra cambiada";
 
 $premiumRepository->update($item);
