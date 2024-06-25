@@ -38,6 +38,7 @@ class AnnotationManager
 
                     if (isset($annotations['ORM\\Column'])) {
                         $columnAnnotation = $annotations['ORM\\Column'];
+
                         $propertyAnnotations[$propertyName] = new Column($columnAnnotation);
                     }
                 }

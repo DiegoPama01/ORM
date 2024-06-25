@@ -11,6 +11,10 @@ use ORM\Models\Entity;
 class PremiumClient extends Entity
 {
     /**
+     * @ORM\Column(type="int", name="id", isPrimaryKey="true")
+     */
+    protected $id;
+    /**
      * @ORM\Column(type="integer", name="idClientFK", references="clients(id)")
      */
     protected ?int $idClientFK;
@@ -20,7 +24,7 @@ class PremiumClient extends Entity
      */
     protected ?string $password;
 
-    public function __construct($password=null)
+    public function __construct($password = null)
     {
         $this->password = $password;
         $this->idClientFK = null;

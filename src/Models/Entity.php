@@ -5,12 +5,6 @@ use ORM\Annotations\AnnotationManager;
 
 abstract class Entity
 {
-    /**
-     * @ORM\Column(type="int", name="id")
-     * @ORM\GeneratedValue()
-     * @ORM\Id()
-     */
-    public $id;
 
     public function __get($name)
     {

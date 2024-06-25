@@ -7,6 +7,11 @@ use ORM\Models\Entity;
 abstract class Home extends Entity
 {
     /**
+     * @ORM\Column(type="int", name="id", isPrimaryKey="true")
+     */
+    protected $id;
+    
+    /**
      * @ORM\Column(type="string", name="address")
      */
     protected ?string $address;

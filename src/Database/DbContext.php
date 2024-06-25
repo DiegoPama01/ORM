@@ -75,7 +75,7 @@ class DbContext
     public function getById($id, $className, $table, $columns)
     {
         $tableName = $table->name;
-        $idColumnName = $columns['id']->name ?? 'id';
+        $idColumnName = $this->getPrimaryKeyColumn($columns);
 
         $sql = "SELECT * FROM `$tableName` WHERE `$idColumnName` = :id";
         $stmt = $this->executeQuery($sql, [':id' => $id]);
@@ -109,7 +109,10 @@ class DbContext
         $this->executeQuery($sql, $values);
 
         try {
-            $entity->id = $this->connection->lastInsertId();
+            $primaryKey = $this->getPrimaryKeyColumn($columns);
+            if ($primaryKey) {
+                $entity->$primaryKey = $this->connection->lastInsertId();
+            }
         } catch (PDOException $e) {
             throw new PDOException('Error inserting entity: ' . $e->getMessage());
         }
@@ -118,7 +121,7 @@ class DbContext
     public function update(Entity $entity, $table, $columns)
     {
         $tableName = $table->name;
-        $idColumnName = $columns['id']->name ?? 'id';
+        $idColumnName = $this->getPrimaryKeyColumn($columns);
 
         $columnNames = array_keys($columns);
         $setClause = [];
@@ -131,14 +134,14 @@ class DbContext
         }
 
         $sql = "UPDATE `$tableName` SET " . implode(", ", $setClause) . " WHERE `$idColumnName` = :id";
-        $values[':id'] = $entity->id;
+        $values[':id'] = $entity->$idColumnName;
         $this->executeQuery($sql, $values);
     }
 
     public function delete($id, $table, $columns)
     {
         $tableName = $table->name;
-        $idColumnName = $columns['id']->name ?? 'id';
+        $idColumnName = $this->getPrimaryKeyColumn($columns);
         $sql = "DELETE FROM `$tableName` WHERE `$idColumnName` = :id";
         $this->executeQuery($sql, [':id' => $id]);
     }
@@ -161,6 +164,54 @@ class DbContext
 
         try {
             $stmt->execute();
+            return $stmt;
+        } catch (PDOException $e) {
+            throw new PDOException('Error executing query: ' . $e->getMessage());
+        }
+    }
+
+    private function getPrimaryKeyColumn($columns)
+    {
+        foreach ($columns as $column) {
+            if ($column->isPrimaryKey) {
+                return $column->name;
+            }
+        }
+        throw new PDOException('Primary key column not found.');
+    }
+
+    public function executeCustomQuery($sql, $params = [], $className = null, $columns = null)
+    {
+        $stmt = $this->connection->prepare($sql);
+
+        foreach ($params as $param => $value) {
+            $paramType = PDO::PARAM_STR;
+
+            if (is_int($value)) {
+                $paramType = PDO::PARAM_INT;
+            } elseif (is_bool($value)) {
+                $paramType = PDO::PARAM_BOOL;
+            }
+
+            $stmt->bindValue($param, $value, $paramType);
+        }
+
+        try {
+            $stmt->execute();
+
+            if (stripos(trim($sql), 'SELECT') === 0) {
+                if ($className && $columns) {
+                    $instances = [];
+                    while ($instance = $stmt->fetch(PDO::FETCH_ASSOC)) {
+                        $entity = $this->createEntity($instance, $className, $columns);
+                        $instances[] = $entity;
+                    }
+                    return $instances;
+                } else {
+                    return $stmt->fetchAll(PDO::FETCH_ASSOC);
+                }
+            }
+
             return $stmt;
         } catch (PDOException $e) {
             throw new PDOException('Error executing query: ' . $e->getMessage());

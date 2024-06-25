@@ -8,6 +8,10 @@ use ORM\Models\Entity;
 class Product extends Entity
 {
     /**
+     * @ORM\Column(type="int", name="id", isPrimaryKey="true")
+     */
+    protected $id;
+    /**
      * @ORM\Column(type="string", name="productName")
      */
     protected ?string $productName;

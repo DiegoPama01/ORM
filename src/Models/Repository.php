@@ -159,4 +159,10 @@ class Repository
 
         return $this->context->getById($entity->$propertyName, $className, $table, $columns);
     }
+
+    public function executeCustomQuery($sql, $params = [], $className = null){
+        $annotations = AnnotationManager::getClassAnnotations($className);
+        $columns = $annotations['columns'];
+        return $this->context->executeCustomQuery($sql, $params, $className, $columns);
+    }
 }

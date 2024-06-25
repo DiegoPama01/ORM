@@ -7,6 +7,10 @@ use ORM\Models\Entity;
 class User extends Entity
 {
     /**
+     * @ORM\Column(type="int", name="id", isPrimaryKey="true")
+     */
+    protected $id;
+    /**
      * @ORM\Column(type="string", name="name")
      */
     protected ?string $name;
