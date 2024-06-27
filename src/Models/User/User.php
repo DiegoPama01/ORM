@@ -27,6 +27,6 @@ class User extends Entity
 
     public function __toString()
     {
-        return parent::__toString() . "Name: $this->name" . PHP_EOL . "Age: $this->age" . PHP_EOL;
+        return "Name: $this->name" . PHP_EOL . "Age: $this->age" . PHP_EOL;
     }
 }

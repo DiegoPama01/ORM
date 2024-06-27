@@ -16,11 +16,6 @@ abstract class Entity
         $this->$name = $value;
     }
 
-    public function __toString()
-    {
-        return get_class($this) . " (ID: " . $this->id . ")" . PHP_EOL;
-    }
-
     public function getParent()
     {
         $nameParentClass = get_parent_class($this);

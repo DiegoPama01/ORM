@@ -29,6 +29,6 @@ class Product extends Entity
 
     public function __toString()
     {
-        return parent::__toString()  . "Name: $this->productName" . PHP_EOL . "Price: $this->price" . PHP_EOL . PHP_EOL;
+        return "Name: $this->productName" . PHP_EOL . "Price: $this->price" . PHP_EOL . PHP_EOL;
     }
 }

@@ -28,7 +28,7 @@ abstract class Home extends Entity
 
     public function __toString()
     {
-        return parent::__toString() . "Address: $this->address" . PHP_EOL . "Postal code: $this->postalCode" . PHP_EOL;
+        return "Address: $this->address" . PHP_EOL . "Postal code: $this->postalCode" . PHP_EOL;
     }
 }
 
