@@ -1,37 +1,44 @@
-# ORM en PHP
 
-![Logo del ORM](ORMPHP.png)
+# ORM in PHP
 
-Este es un ORM (Object-Relational Mapping) desarrollado en PHP que facilita la creación y gestión de entidades almacenadas en una base de datos relacional.
+![ORM Logo](ORMPHP.png)
 
-## Tabla de Contenidos
+This is an ORM (Object-Relational Mapping) developed in PHP that facilitates the creation and management of entities stored in a relational database.
 
-1. [Instalación](#instalación)
-2. [Conceptos Básicos](#conceptos-básicos)
-3. [Configuración](#configuración)
-4. [Uso](#uso)
-5. [Ejemplos](#ejemplos)
-6. [Contribución](#contribución)
-7. [Licencia](#licencia)
+## Table of Contents
 
-## Instalación
+- [ORM in PHP](#orm-in-php)
+  - [Table of Contents](#table-of-contents)
+  - [Installation](#installation)
+  - [Basic Concepts](#basic-concepts)
+  - [Configuration](#configuration)
+  - [Usage](#usage)
+      - [DBContext](#dbcontext)
+      - [Create Entity](#create-entity)
+      - [Repository](#repository)
+      - [CRUD](#crud)
+  - [Examples](#examples)
+  - [Contributing](#contributing)
+  - [License](#license)
 
-Para instalar el ORM, puedes clonar el repositorio desde GitHub y luego instalar las dependencias usando Composer:
+## Installation
+
+To install the ORM, you can clone the repository from GitHub and then install the dependencies using Composer:
 
 ```bash
-git clone https://github.com/tu_usuario/orm-php.git
+git clone https://github.com/your_user/orm-php.git
 cd orm-php
 composer install
 ```
 
-## Conceptos básicos
-El ORM facilita la interacción entre objetos de PHP y una base de datos relacional, mapeando las entidades a tablas y las propiedades a columnas. Nos facilita la ejecución de las operaciones CRUDL y la obtención de otras entidades a traves de Foreign Keys.
+## Basic Concepts
+The ORM facilitates interaction between PHP objects and a relational database by mapping entities to tables and properties to columns. It simplifies the execution of CRUD operations and the retrieval of other entities through Foreign Keys.
 
-## Configuración
-Asegurate que los permisos en tu DB están correctos para permitir el acceso.
+## Configuration
+Ensure that your DB permissions are correctly set to allow access.
 
-## Uso
-Antes de comenzar a usar el ORM, configura la conexión a tu base de datos creando una instacia de DBContext. Esta instancia se encargará de mantener la conexión con la DB y servirá de punto de acceso para los repositorios de las entidades.
+## Usage
+Before you start using the ORM, configure the connection to your database by creating an instance of DBContext. This instance will handle the connection to the DB and will serve as the access point for the entity repositories.
 
 #### DBContext
 ```php
@@ -41,19 +48,19 @@ $db = 'dbName';
 $user = 'username';
 $pass = 'dbPass';
 
-$context = new DbContext($host,$db,$user,$pass);
+$context = new DbContext($host, $db, $user, $pass);
 ```
 
 #### Create Entity
-Ahora necesitas crear tu clase de tipo entidad que cada instancia representará una linea de tu tabla.
-Cosas a tener en cuenta:
-- Tu clase si representa una tabla entonces necesita tener un comentario con un parametro que será el nombre de tu tabla en tu DB.
-- Las propiedades que quieras que sean representadas por una columna en tu BD necesitan tener un comentario que puede contener tres argumentos:
-    - type="typeName" el tipo de dato que es.
-    - name="columnName" el nombre de la columna en la tabla 
-    - isPrimaryKey="true or false" si la columna en cuestión es la PK.
-- Las propiedades representadas por la BD deben ser públicas o protegidas.
-- La function __construct debe poder ser ejecutada sin parametros.
+Now you need to create your entity class where each instance will represent a row in your table.
+Things to keep in mind:
+- Your class, if representing a table, needs to have a comment with a parameter that will be the name of your table in your DB.
+- Properties that you want to be represented by a column in your DB need to have a comment that can contain three arguments:
+    - type="typeName": the data type.
+    - name="columnName": the column name in the table.
+    - isPrimaryKey="true or false": if the column is the primary key.
+- Properties represented by the DB should be public or protected.
+- The __construct function must be able to run without parameters.
 ```php 
 <?php
 
@@ -75,23 +82,20 @@ class Example extends Entity
      */
     protected ?string $example;
 
-
     public function __construct($example = null)
     {
         $this->example = $example;
     }
 }
-
-
 ```
 
 #### Repository
-Ahora puedes pasar el DBContext a la clase Repository para poder acceder a tu clase.
+Now you can pass the DBContext to the Repository class to access your class.
 ```php
 <?php
 $repository = new Repository($context, Example::class);
 ```
-o puedes extender de la clase Repository para crear tus propias funciones.
+Or you can extend the Repository class to create your own functions.
 ```php
 <?php
 namespace ORM\Models\Example;
@@ -102,30 +106,28 @@ use PDO;
 
 class ExampleRepository extends Repository
 {
-
     public function __construct(DbContext $context)
     {
         parent::__construct($context, Example::class);
     }
 }
-
 ```
 
-#### CRUDL
+#### CRUD
 
 ```php
 <?php
 $repository = new Repository($context, Example::class);
 
-$repository->getAll(); // Regresa todas las Entities de la tabla de la class Example.
-$repository->getById(1); // Regresa la entidad con id 1
-$repository->insert($entity); //Inserta la entidad de tipo Example guardada en $entity.
-$repository->update($entity); //Actualiza la entidad de tipo Example guardada en $entity.
-$repository->delete(1); //Borra la entidad con id 1 de la tabla
+$repository->getAll(); // Returns all entities from the table of the Example class.
+$repository->getById(1); // Returns the entity with id 1
+$repository->insert($entity); // Inserts the entity of type Example stored in $entity.
+$repository->update($entity); // Updates the entity of type Example stored in $entity.
+$repository->delete(1); // Deletes the entity with id 1 from the table
 ```
-## Ejemplos
+## Examples
 
-Los siguientes archivos son ejemplos funcionales de dicho ORM. Simplemente incluyelos en el Main.
+The following files are functional examples of this ORM. Simply include them in the Main.
 
 - ApartmentExample.php
 - BungalowExample.php
@@ -134,19 +136,17 @@ Los siguientes archivos son ejemplos funcionales de dicho ORM. Simplemente inclu
 - ProductExample.php
 - UserExample.php
 
-## Contribución
+## Contributing
 
-¡Gracias por considerar contribuir al proyecto! Si deseas contribuir, por favor sigue estos pasos:
+Thank you for considering contributing to the project! If you want to contribute, please follow these steps:
 
-1. Fork del repositorio y clónalo localmente.
-2. Crea una nueva rama para tu contribución.
-3. Haz tus cambios y asegúrate de seguir las guías de estilo y estándares de código.
-4. Haz pruebas exhaustivas de tus cambios.
-5. Envía un Pull Request explicando claramente los cambios que has realizado y cualquier problema que hayas resuelto.
-6. Participa en la discusión y revisión de tu Pull Request.
+1. Fork the repository and clone it locally.
+2. Create a new branch for your contribution.
+3. Make your changes and ensure you follow the style guides and coding standards.
+4. Thoroughly test your changes.
+5. Submit a Pull Request clearly explaining the changes you made and any issues you resolved.
+6. Participate in the discussion and review of your Pull Request.
 
+## License
 
-## Licencia
-
-Este proyecto está licenciado bajo la [Licencia MIT](LICENSE).
-
+This project is licensed under the [MIT License](LICENSE).
